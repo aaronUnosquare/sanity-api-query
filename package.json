@@ -1,0 +1,16 @@
+{
+	"name": "sanity-patch-update",
+	"version": "1.0.0",
+	"description": "Update the resource card's style field for all the documents in sanity",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node index.js"
+	},
+	"author": "Aaron Lopez Sosa",
+	"license": "ISC",
+	"dependencies": {
+		"axios": "^0.25.0",
+		"dotenv": "^16.0.0"
+	}
+}
