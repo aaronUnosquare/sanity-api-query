@@ -16,18 +16,39 @@ SANITY_EDIT_TOKEN=<SANITY_EDIT_TOKEN>
 
 ### Install node_modules
 
-This a required step before to run the script, so, go to the terminal, then navigate to the directory project, and then, run this command:
+This is a required step before to run the script, so, go to the terminal, then navigate to the directory project, and then, run this command:
 
 ```
-$ npm isntall
+$ npm install
 ```
 
-Once you have set the values for the environments variables and installed the node_modules, you can now start the script by runing this command in the terminal:
+### Add page types
+
+The [pageTypes.js](./pageTypes.js) file has a list of pages types that this script will update. If you see there's a missing type, please add it or in case you don't want to update all pages, you only have to remove the ones that you don't need.
+
+```js
+const pageTypes = [
+	'page',
+	'news',
+	'event',
+	'whitePaper',
+	'webinar',
+	'resourcePage',
+];
+
+module.exports = pageTypes;
+```
+
+### Run
+
+Once you have set the values for the environments variables installed the node_modules, and make sure you have the list of page types to update, you can now start the script by runing this command in the terminal:
 
 ```
 $ npm start
 ```
 
-You can find the results in the logs directory
+### Logs
+
+You can find the results in the logs directory.
 
 > ./logs
