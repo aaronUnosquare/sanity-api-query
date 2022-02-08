@@ -27,7 +27,10 @@ const buildPatchQuery = (data) => {
 	}
 
 	const pages = data.result
-		.filter((page) => page.body && page.body.length > 0)
+		.filter(
+			(page) =>
+				pageTypes.includes(page._type) && page.body && page.body.length > 0
+		)
 		.map((page) => ({
 			patch: {
 				id: page._id,
@@ -37,9 +40,7 @@ const buildPatchQuery = (data) => {
 			},
 		}));
 
-	return {
-		mutations: pages,
-	};
+	return pages;
 };
 
 const fetchPages = async (query) => {
@@ -50,6 +51,7 @@ const fetchPages = async (query) => {
 		url: url,
 		headers: {
 			'Content-type': 'application/json',
+			Authorization: `Bearer ${process.env.SANITY_EDIT_TOKEN}`,
 		},
 	});
 
@@ -101,10 +103,18 @@ const init = async () => {
 	pageTypes.forEach((page) => (query += `"${page}",`));
 	query = `${query.slice(0, -1)}]]{_id, _type, body[_type == "resourceCards"]}`;
 
-	const data = await fetchPages(query);
-	const patch = buildPatchQuery(data);
+	const genericPages = await fetchPages(query);
+	const patchGenericPages = buildPatchQuery(genericPages);
 
-	if (patch.mutations.length === 0) {
+	let draftQuery = `*[_id in path("drafts.**")]{_id, _type, body[_type == "resourceCards"]}`;
+	const draftPages = await fetchPages(draftQuery);
+	const patchDraftPages = buildPatchQuery(draftPages);
+
+	const mutations = {
+		mutations: [...patchGenericPages, ...patchDraftPages],
+	};
+
+	if (mutations.mutations.length === 0) {
 		console.log('No data to update!!!');
 		return;
 	}
@@ -118,12 +128,12 @@ const init = async () => {
 			'Content-type': 'application/json',
 			Authorization: `Bearer ${process.env.SANITY_EDIT_TOKEN}`,
 		},
-		data: JSON.stringify(patch),
+		data: JSON.stringify(mutations),
 	});
 
-	writeLog(patch, result.data);
+	writeLog(mutations, result.data);
 
-	console.log('The pages update has been donde!');
+	console.log('The pages update has been done!');
 };
 
 init();
