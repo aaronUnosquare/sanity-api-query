@@ -2,6 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const pageTypes = require('./pageTypes');
 
 const generateUrl = (type, query = '') => {
 	const { PROJECT_ID, SANITY_API, API_VERSION, DATASET } = process.env;
@@ -26,7 +27,7 @@ const buildPatchQuery = (data) => {
 	}
 
 	const pages = data.result
-		.filter((page) => page.body.length > 0)
+		.filter((page) => page.body && page.body.length > 0)
 		.map((page) => ({
 			patch: {
 				id: page._id,
@@ -91,11 +92,23 @@ const writeLog = (patchData, result) => {
 };
 
 const init = async () => {
-	const query =
-		'*[_type == "resourcePage"]{_id, _type, body[_type == "resourceCards"]}';
+	if (!pageTypes || pageTypes.length === 0) {
+		throw new Error('No page types found :(');
+	}
+
+	let query = '*[_type in [';
+
+	pageTypes.forEach((page) => (query += `"${page}",`));
+	query = `${query.slice(0, -1)}]]{_id, _type, body[_type == "resourceCards"]}`;
 
 	const data = await fetchPages(query);
 	const patch = buildPatchQuery(data);
+
+	if (patch.mutations.length === 0) {
+		console.log('No data to update!!!');
+		return;
+	}
+
 	const url = generateUrl('mutate');
 
 	const result = await axios({
